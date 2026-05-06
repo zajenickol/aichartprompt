@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>MEXC Prompt Builder v4</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f14;--panel:#121821;--panel2:#171f2b;--line:#263043;--text:#edf2ff;--muted:#8f9bad;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#60a5fa;--cyan:#22d3ee;--purple:#a78bfa;--radius:18px;--shadow:0 22px 60px rgba(0,0,0,.4);font-family:Inter,system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#152032 0%,var(--bg) 44%);color:var(--text);min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}
+.wrap{max-width:1400px;margin:0 auto;padding:14px 14px 40px}
+header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#22d3ee,#2563eb 55%,#22c55e);flex-shrink:0}
+h1{margin:0;font-size:clamp(20px,4vw,30px);line-height:1.05}
+.sub{margin:2px 0 0;color:var(--muted);font-size:12px}
+.badge{padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03);font-size:12px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+.card-title{font-weight:700;font-size:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:#0c121a;color:var(--text);padding:10px 14px;border-radius:14px;transition:.18s;font-size:14px}
+.btn:hover{transform:translateY(-1px);border-color:#41526c}
+.btn.active{background:#1e3050;border-color:#5a7db4}
+.btn.primary{background:linear-gradient(135deg,#2563eb,#22c55e);border:none;font-weight:600}
+.btn.ghost{background:transparent;border-color:var(--line)}
+.input{width:100%;background:#0a1017;border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px;font-size:15px}
+.textarea{width:100%;background:#0a1017;border:1px solid var(--line);color:var(--text);border-radius:14px;padding:13px;font-family:ui-monospace,monospace;font-size:13px;line-height:1.55;min-height:300px;resize:vertical}
+.mini{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{background:#0a1017;border:1px solid var(--line);border-radius:14px;padding:11px}
+.kpi .lbl{font-size:11px;color:var(--muted);margin-bottom:4px}
+.kpi .val{font-size:18px;font-weight:700}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--blue)}.cyan{color:var(--cyan)}.purple{color:var(--purple)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 0;text-align:left;vertical-align:middle}
+.tbl th{color:var(--muted);font-weight:600;width:52%}
+.divider{height:1px;background:var(--line);margin:11px 0}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0a1017;border:1px solid var(--line);font-size:11px}
+.err{color:var(--red);font-size:13px;padding:8px 0}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.pill.bull{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.pill.bear{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.pill.neut{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+@media(min-width:960px){.grid{grid-template-columns:360px 1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1200px){.kpis{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <div><h1>MEXC Prompt Builder <span style="color:var(--cyan)">v4</span></h1><p class="sub">EMA · ATR · MACD · StochRSI · L/S Ratio · Funding Trend</p></div>
+  </div>
+  <div class="badge" id="clock">--:--:--</div>
+</header>
+
+<div class="grid">
+  <!-- LEFT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <section class="card">
+      <div class="card-title">Rynek <span class="mini">Wybierz lub wpisz symbol</span></div>
+      <div class="row" id="presets">
+        <button class="btn active" data-sym="BTCUSDT">BTC</button>
+        <button class="btn" data-sym="ETHUSDT">ETH</button>
+        <button class="btn" data-sym="SOLUSDT">SOL</button>
+        <button class="btn" data-sym="XRPUSDT">XRP</button>
+        <button class="btn" data-sym="DOGEUSDT">DOGE</button>
+        <button class="btn" data-sym="BNBUSDT">BNB</button>
+        <button class="btn" data-sym="AVAXUSDT">AVAX</button>
+        <button class="btn" data-sym="ADAUSDT">ADA</button>
+      </div>
+      <div class="divider"></div>
+      <input id="custom" class="input" placeholder="np. PEPEUSDT albo TONUSDT"/>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="useSymbol">Użyj symbolu</button>
+        <button class="btn ghost" id="refresh">⟳ Odśwież</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Cena i rynek</div>
+      <div class="kpis" id="kpiBlock">
+        <div class="kpi"><div class="lbl">Symbol</div><div class="val blue" id="symbol">BTCUSDT</div></div>
+        <div class="kpi"><div class="lbl">Cena</div><div class="val" id="lastPrice">--</div></div>
+        <div class="kpi"><div class="lbl">24h %</div><div class="val" id="change24h">--</div></div>
+        <div class="kpi"><div class="lbl">Funding now</div><div class="val" id="funding">--</div></div>
+      </div>
+      <div class="divider"></div>
+      <table class="tbl">
+        <tr><th>24h High</th><td id="high24">--</td></tr>
+        <tr><th>24h Low</th><td id="low24">--</td></tr>
+        <tr><th>Mark Price</th><td id="mark">--</td></tr>
+        <tr><th>Funding trend 7d</th><td id="fundTrend">--</td></tr>
+        <tr><th>Long/Short ratio</th><td id="lsRatio">--</td></tr>
+        <tr><th>L/S sygnał</th><td id="lsSignal">--</td></tr>
+        <tr><th>Aktualizacja</th><td id="updated">--</td></tr>
+      </table>
+      <div id="errMsg" class="err"></div>
+    </section>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <section class="card">
+      <div class="card-title">Analiza techniczna 15m + 1h</div>
+
+      <div class="section-label">RSI · Stoch RSI · Trend</div>
+      <div class="cols3">
+        <div class="kpi"><div class="lbl">RSI 15m</div><div class="val yellow" id="rsi15">--</div></div>
+        <div class="kpi"><div class="lbl">RSI 1h</div><div class="val yellow" id="rsi1h">--</div></div>
+        <div class="kpi"><div class="lbl">StochRSI K 1h</div><div class="val purple" id="stochK">--</div></div>
+        <div class="kpi"><div class="lbl">Trend 15m</div><div class="val" id="trend15">--</div></div>
+        <div class="kpi"><div class="lbl">Trend 1h</div><div class="val" id="trend1h">--</div></div>
+        <div class="kpi"><div class="lbl">Wolumen 15m</div><div class="val" id="volComp">--</div></div>
+      </div>
+
+      <div class="section-label">EMA (1h)</div>
+      <div class="cols2">
+        <table class="tbl">
+          <tr><th>EMA 9</th><td id="ema9">--</td></tr>
+          <tr><th>EMA 21</th><td id="ema21">--</td></tr>
+          <tr><th>Cena vs EMA9</th><td id="vsEma9">--</td></tr>
+        </table>
+        <table class="tbl">
+          <tr><th>EMA 50</th><td id="ema50">--</td></tr>
+          <tr><th>EMA 200</th><td id="ema200">--</td></tr>
+          <tr><th>Cena vs EMA200</th><td id="vsEma200">--</td></tr>
+        </table>
+      </div>
+
+      <div class="section-label">MACD (1h) · ATR</div>
+      <div class="cols2">
+        <table class="tbl">
+          <tr><th>MACD line</th><td id="macdLine">--</td></tr>
+          <tr><th>Signal line</th><td id="macdSig">--</td></tr>
+          <tr><th>Histogram</th><td id="macdHist">--</td></tr>
+          <tr><th>MACD sygnał</th><td id="macdSignal">--</td></tr>
+        </table>
+        <table class="tbl">
+          <tr><th>ATR 14 (1h)</th><td id="atr">--</td></tr>
+          <tr><th>ATR % ceny</th><td id="atrPct">--</td></tr>
+          <tr><th>Swing High 1h</th><td id="swH1h">--</td></tr>
+          <tr><th>Swing Low 1h</th><td id="swL1h">--</td></tr>
+        </table>
+      </div>
+
+      <div class="section-label">Swing · Fear & Greed · Hint</div>
+      <div class="cols2">
+        <table class="tbl">
+          <tr><th>Swing High 15m</th><td id="swH15">--</td></tr>
+          <tr><th>Swing Low 15m</th><td id="swL15">--</td></tr>
+          <tr><th>Fear & Greed</th><td id="fg">--</td></tr>
+        </table>
+        <table class="tbl">
+          <tr><th>Prompt mode</th><td><span class="tag">Aggressive · disciplined</span></td></tr>
+          <tr><th>Setup hint</th><td id="hint" style="color:var(--yellow);font-weight:600">--</td></tr>
+          <tr><th>Bias</th><td id="bias">--</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Prompt dla AI <span class="mini">skopiuj i wklej do Perplexity / ChatGPT</span></div>
+      <textarea id="prompt" class="textarea" readonly></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="copy">📋 Kopiuj prompt</button>
+        <button class="btn ghost" id="openMexc">Otwórz MEXC Futures</button>
+      </div>
+    </section>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const s={sym:'BTCUSDT'};
+const nf=(n,d=2)=>(n==null||!isFinite(n))?'--':new Intl.NumberFormat('en-US',{maximumFractionDigits:d,minimumFractionDigits:d}).format(n);
+const pct=n=>(n==null||!isFinite(n))?'--':(n>=0?'+':'')+n.toFixed(2)+'%';
+const dec=p=>p<0.01?6:p<1?4:p<100?2:0;
+
+/* ── Indicators ── */
+function calcRSI(c,p=14){if(c.length<p+1)return null;let g=0,l=0;for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];d>=0?g+=d:l-=d;}const rs=l===0?100:g/l;return 100-(100/(1+rs));}
+
+function calcEMA(c,p){let k=2/(p+1),e=c.slice(0,p).reduce((a,b)=>a+b,0)/p;for(let i=p;i<c.length;i++)e=c[i]*k+e*(1-k);return e;}
+
+function calcATR(candles,p=14){if(candles.length<p+1)return null;const trs=[];for(let i=1;i<candles.length;i++){const h=candles[i].h,l=candles[i].l,pc=candles[i-1].c;trs.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)));}return trs.slice(-p).reduce((a,b)=>a+b,0)/p;}
+
+function calcMACD(c,f=12,sl=26,sig=9){if(c.length<sl+sig)return null;const emaF=arr=>calcEMA(arr,f),emaS=arr=>calcEMA(arr,sl);const macdLine=[];for(let i=sl-1;i<c.length;i++)macdLine.push(calcEMA(c.slice(0,i+1),f)-calcEMA(c.slice(0,i+1),sl));const signalLine=calcEMA(macdLine,sig);return{line:macdLine[macdLine.length-1],signal:signalLine,hist:macdLine[macdLine.length-1]-signalLine};}
+
+function calcStochRSI(c,rsiP=14,stochP=14,kP=3){if(c.length<rsiP+stochP+kP)return null;const rsis=[];for(let i=rsiP;i<=c.length;i++)rsis.push(calcRSI(c.slice(0,i),rsiP));const window=rsis.slice(-stochP);const mn=Math.min(...window),mx=Math.max(...window);if(mx===mn)return 50;const raw=(rsis[rsis.length-1]-mn)/(mx-mn)*100;return raw;}
+
+function calcTrend(c){if(c.length<20)return'--';const last=c[c.length-1],s20=calcEMA(c,20),s50=c.length>=50?calcEMA(c,50):null;if(s50&&last>s20&&s20>s50)return'WZROSTOWY';if(s50&&last<s20&&s20<s50)return'SPADKOWY';return'BOCZNY';}
+
+function calcSwing(highs,lows,n=20){return{h:Math.max(...highs.slice(-n)),l:Math.min(...lows.slice(-n))};}
+
+/* ── API calls ── */
+async function fetchKlines(sym,interval,limit=200){
+  const r=await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=${interval}&limit=${limit}`,{signal:AbortSignal.timeout(9000)});
+  if(!r.ok)throw new Error('Binance klines '+interval+' error');
+  const d=await r.json();
+  return d.map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
+}
+
+async function fetchBinanceTicker(sym){
+  const r=await fetch(`https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${sym}`,{signal:AbortSignal.timeout(8000)});
+  if(!r.ok)throw new Error('ticker error');
+  return r.json();
+}
+
+async function fetchLSRatio(sym){
+  try{
+    const r=await fetch(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=5m&limit=1`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;const d=await r.json();
+    return d?.[0]?{long:+d[0].longAccount,short:+d[0].shortAccount,ratio:+d[0].longShortRatio}:null;
+  }catch{return null;}
+}
+
+async function fetchFundingHistory(sym){
+  try{
+    const r=await fetch(`https://fapi.binance.com/fapi/v1/fundingRate?symbol=${sym}&limit=21`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;const d=await r.json();
+    return d.map(x=>+x.fundingRate);
+  }catch{return null;}
+}
+
+async function fetchFundingNow(sym){
+  try{
+    const r=await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${sym}`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;const d=await r.json();
+    return{funding:+d.lastFundingRate,mark:+d.markPrice};
+  }catch{return null;}
+}
+
+const CG_MAP={BTCUSDT:'bitcoin',ETHUSDT:'ethereum',SOLUSDT:'solana',XRPUSDT:'ripple',DOGEUSDT:'dogecoin',BNBUSDT:'binancecoin',AVAXUSDT:'avalanche-2',TONUSDT:'the-open-network',ADAUSDT:'cardano',DOTUSDT:'polkadot',MATICUSDT:'matic-network',LTCUSDT:'litecoin',PEPEUSDT:'pepe',WIFUSDT:'dogwifcoin',BONKUSDT:'bonk'};
+async function fetchCG(id){
+  const r=await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${id}&sparkline=false`,{signal:AbortSignal.timeout(9000)});
+  if(!r.ok)throw new Error('CoinGecko error');const d=await r.json();return d[0]||null;
+}
+async function fetchFG(){
+  try{const r=await fetch('https://api.alternative.me/fng/?limit=1&format=json',{signal:AbortSignal.timeout(5000)});const d=await r.json();return d?.data?.[0]||null;}catch{return null;}
+}
+
+/* ── Main ── */
+async function load(){
+  $('errMsg').textContent='';$('updated').textContent='ładowanie...';
+  const sym=s.sym;const cgId=CG_MAP[sym]||null;
+  try{
+    const[k15,k1h,k1d,k1w,fg,cg,ls,fhist,fnow]= await Promise.all([
+      fetchKlines(sym,'15m',120),
+      fetchKlines(sym,'1h',200),
+      fetchKlines(sym,'1d',10),
+      fetchKlines(sym,'1w',5),
+      fetchFG(),
+      cgId?fetchCG(cgId):fetchBinanceTicker(sym).then(t=>({current_price:+t.lastPrice,high_24h:+t.highPrice,low_24h:+t.lowPrice,price_change_percentage_24h:+t.priceChangePercent})),
+      fetchLSRatio(sym),
+      fetchFundingHistory(sym),
+      fetchFundingNow(sym)
+    ]);
+
+    const last=cg?.current_price??0;
+    const high=cg?.high_24h??0;const low=cg?.low_24h??0;
+    const chgPct=cg?.price_change_percentage_24h??0;
+    const d=dec(last);
+
+    /* klines */
+    const c15=k15.map(x=>x.c),c1h=k1h.map(x=>x.c);
+    const sw15=calcSwing(k15.map(x=>x.h),k15.map(x=>x.l));
+    const sw1h=calcSwing(k1h.map(x=>x.h),k1h.map(x=>x.l));
+    const r15=calcRSI(c15);const r1h=calcRSI(c1h);
+    const tr15=calcTrend(c15);const tr1h=calcTrend(c1h);
+    const volAvg=k15.slice(-20).reduce((a,b)=>a+b.v,0)/20;
+    const lastVol=k15[k15.length-1]?.v||0;
+    const volStr=lastVol>volAvg?'WYŻSZY (+'+((lastVol/volAvg-1)*100).toFixed(0)+'%)':'NIŻSZY ('+((lastVol/volAvg-1)*100).toFixed(0)+'%)';
+
+    /* Daily / Weekly levels */
+    const todayBar=k1d.length?k1d[k1d.length-1]:null;
+    const prevBar =k1d.length>1?k1d[k1d.length-2]:null;
+    const weekBar =k1w.length?k1w[k1w.length-1]:null;
+    const dHigh  =todayBar?todayBar.h:null;
+    const dLow   =todayBar?todayBar.l:null;
+    const dOpen  =todayBar?todayBar.o:null;
+    const pdHigh =prevBar ?prevBar.h:null;
+    const pdLow  =prevBar ?prevBar.l:null;
+    const wHigh  =weekBar ?weekBar.h:null;
+    const wLow   =weekBar ?weekBar.l:null;
+    const wOpen  =weekBar ?weekBar.o:null;
+
+    /* VWAP 24h z ostatnich 24 świec 1h */
+    const vwapBars=k1h.slice(-24);
+    const vwapTPV=vwapBars.reduce((a,b)=>a+((b.h+b.l+b.c)/3)*b.v,0);
+    const vwapVol=vwapBars.reduce((a,b)=>a+b.v,0);
+    const vwap=vwapVol>0?vwapTPV/vwapVol:null;
+    const vsVwap=vwap&&last?(last-vwap)/vwap*100:null;
+
+    /* Round Numbers */
+    function roundStep(p){return p>50000?1000:p>10000?500:p>1000?100:p>100?10:p>10?1:p>1?0.1:0.01;}
+    const rstep=roundStep(last);
+    const rndSup=Math.floor(last/rstep)*rstep;
+    const rndRes=Math.ceil(last/rstep)*rstep;
+    const rndSupFixed=Math.abs(rndSup-last)<1e-9?rndSup-rstep:rndSup;
+    const rndResFixed=Math.abs(rndRes-last)<1e-9?rndRes+rstep:rndRes;
+    const rndSupDist=last?(last-rndSupFixed)/last*100:null;
+    const rndResDist=last?(rndResFixed-last)/last*100:null;
+
+    /* Closest Key Level */
+    const levels=[dHigh,dLow,pdHigh,pdLow,wHigh,wLow,sw1h.h,sw1h.l,vwap,rndResFixed,rndSupFixed].filter(x=>x&&x>0);
+    const closestLevel=levels.reduce((a,b)=>Math.abs(b-last)<Math.abs(a-last)?b:a,levels[0]||last);
+    const distToKey=last&&closestLevel?(closestLevel-last)/last*100:0;
+
+    /* EMA 1h */
+    const ema9=calcEMA(c1h,9);const ema21=calcEMA(c1h,21);
+    const ema50=c1h.length>=50?calcEMA(c1h,50):null;
+    const ema200=c1h.length>=200?calcEMA(c1h,200):null;
+
+    /* MACD 1h */
+    const macd=calcMACD(c1h);
+
+    /* ATR 1h */
+    const atr=calcATR(k1h);
+    const atrPct=atr&&last?atr/last*100:null;
+
+    /* StochRSI 1h */
+    const stochK=calcStochRSI(c1h);
+
+    /* Funding */
+    const fundNow=fnow?.funding??null;
+    const markPrice=fnow?.mark??last;
+    let fundTrendStr='--';
+    if(fhist&&fhist.length>=7){
+      const avg7=fhist.slice(-7).reduce((a,b)=>a+b,0)/7;
+      const avg3=fhist.slice(-3).reduce((a,b)=>a+b,0)/3;
+      if(avg3>avg7*1.2)fundTrendStr='ROSNĄCY (longs przepłacają)';
+      else if(avg3<avg7*0.8)fundTrendStr='MALEJĄCY (shorts przepłacają)';
+      else fundTrendStr='STABILNY ('+((avg7*100).toFixed(4))+'% avg)';
+    }
+
+    /* L/S ratio */
+    const lsStr=ls?`${(ls.long*100).toFixed(1)}% long / ${(ls.short*100).toFixed(1)}% short`:'N/A';
+    const lsSig=ls?ls.ratio>1.3?'TŁUM LONG → możliwy short squeeze':ls.ratio<0.77?'TŁUM SHORT → możliwy long squeeze':'ZBALANSOWANY':'--';
+
+    /* Bias summary */
+    let bullPoints=0,bearPoints=0;
+    if(tr1h==='WZROSTOWY')bullPoints+=2;else if(tr1h==='SPADKOWY')bearPoints+=2;
+    if((r1h??50)>55)bullPoints++;else if((r1h??50)<45)bearPoints++;
+    if(macd&&macd.hist>0)bullPoints++;else if(macd&&macd.hist<0)bearPoints++;
+    if(last>ema21)bullPoints++;else bearPoints++;
+    if(ema200&&last>ema200)bullPoints++;else if(ema200)bearPoints++;
+    const biasStr=bullPoints>bearPoints?`BULLISH (${bullPoints}/${bullPoints+bearPoints})`:bearPoints>bullPoints?`BEARISH (${bearPoints}/${bullPoints+bearPoints})`:`NEUTRAL (${bullPoints}/${bullPoints+bearPoints})`;
+    const biasClass=bullPoints>bearPoints?'green':bearPoints>bullPoints?'red':'yellow';
+
+    /* Hint */
+    let hint='';
+    if(tr1h==='WZROSTOWY'&&(r1h??0)>50&&macd?.hist>0)hint='LONG po pullbacku do EMA21';
+    else if(tr1h==='SPADKOWY'&&(r1h??100)<50&&macd?.hist<0)hint='SHORT po odbiciu do EMA21';
+    else if((stochK??50)<20&&tr1h==='WZROSTOWY')hint='LONG — Stoch RSI oversold w uptrendzie';
+    else if((stochK??50)>80&&tr1h==='SPADKOWY')hint='SHORT — Stoch RSI overbought w downtrendzie';
+    else hint='Brak wyraźnego setupu — czekaj';
+
+    /* ── Update UI ── */
+    $('symbol').textContent=sym;
+    $('lastPrice').textContent='$'+nf(last,d);
+    $('change24h').textContent=pct(chgPct);$('change24h').className='val '+(chgPct>=0?'green':'red');
+    $('funding').textContent=fundNow!=null?(fundNow*100).toFixed(4)+'%':'--';
+    $('funding').className='val '+(fundNow>0?'red':fundNow<0?'green':'yellow');
+    $('high24').textContent='$'+nf(high,d);$('low24').textContent='$'+nf(low,d);
+    $('mark').textContent='$'+nf(markPrice,d);
+    $('fundTrend').textContent=fundTrendStr;
+    $('lsRatio').textContent=lsStr;$('lsSignal').textContent=lsSig;
+    $('updated').textContent=new Date().toLocaleTimeString('pl-PL');
+
+    $('rsi15').textContent=r15?.toFixed(1)??'--';$('rsi15').className='val '+(r15>70?'red':r15<30?'green':'yellow');
+    $('rsi1h').textContent=r1h?.toFixed(1)??'--';$('rsi1h').className='val '+(r1h>70?'red':r1h<30?'green':'yellow');
+    $('stochK').textContent=stochK?.toFixed(1)??'--';$('stochK').className='val '+(stochK>80?'red':stochK<20?'green':'purple');
+    $('trend15').textContent=tr15;$('trend15').className='val '+(tr15==='WZROSTOWY'?'green':tr15==='SPADKOWY'?'red':'yellow');
+    $('trend1h').textContent=tr1h;$('trend1h').className='val '+(tr1h==='WZROSTOWY'?'green':tr1h==='SPADKOWY'?'red':'yellow');
+    $('volComp').textContent=volStr;$('volComp').className='val '+(lastVol>volAvg?'green':'yellow');
+
+    $('ema9').textContent='$'+nf(ema9,d);$('ema21').textContent='$'+nf(ema21,d);
+    $('ema50').textContent=ema50?'$'+nf(ema50,d):'--';$('ema200').textContent=ema200?'$'+nf(ema200,d):'--';
+    const vsE9=last&&ema9?((last-ema9)/ema9*100):null;const vsE200=last&&ema200?((last-ema200)/ema200*100):null;
+    $('vsEma9').textContent=vsE9!=null?(vsE9>=0?'Powyżej +':'Poniżej ')+Math.abs(vsE9).toFixed(2)+'%':'--';
+    $('vsEma9').className=vsE9>=0?'green':'red';
+    $('vsEma200').textContent=vsE200!=null?(vsE200>=0?'Powyżej +':'Poniżej ')+Math.abs(vsE200).toFixed(2)+'%':'--';
+    $('vsEma200').className=vsE200>=0?'green':'red';
+
+    $('macdLine').textContent=macd?nf(macd.line,4):'--';
+    $('macdSig').textContent=macd?nf(macd.signal,4):'--';
+    $('macdHist').textContent=macd?nf(macd.hist,4):'--';$('macdHist').className=macd?.hist>0?'green':'red';
+    $('macdSignal').textContent=macd?macd.hist>0?'BULLISH ↑':'BEARISH ↓':'--';$('macdSignal').className=macd?.hist>0?'green':'red';
+
+    $('atr').textContent=atr?'$'+nf(atr,d):'--';$('atrPct').textContent=atrPct?atrPct.toFixed(2)+'%':'--';
+    $('swH15').textContent='$'+nf(sw15.h,d);$('swL15').textContent='$'+nf(sw15.l,d);
+    $('swH1h').textContent='$'+nf(sw1h.h,d);$('swL1h').textContent='$'+nf(sw1h.l,d);
+
+    const fgVal=fg?.value??'--';const fgClass=fg?.value_classification??'--';
+    $('fg').textContent=fgVal+' ('+fgClass+')';
+    $('hint').textContent=hint;
+    $('bias').textContent=biasStr;$('bias').className=biasClass;
+
+    /* ── Build Prompt ── */
+    const prompt=
+`=== FUTURES TRADING SETUP ===
+Symbol: ${sym} (Futures)
+Cena: $${nf(last,d)} | Mark: $${nf(markPrice,d)}
+24h change: ${pct(chgPct)} | High: $${nf(high,d)} | Low: $${nf(low,d)}
+
+--- MOMENTUM ---
+RSI 15m: ${r15?.toFixed(1)??'--'} | RSI 1h: ${r1h?.toFixed(1)??'--'}
+StochRSI K (1h): ${stochK?.toFixed(1)??'--'}
+Trend 15m: ${tr15} | Trend 1h: ${tr1h}
+Wolumen 15m: ${volStr}
+
+--- EMA (1h) ---
+EMA9: $${nf(ema9,d)} | EMA21: $${nf(ema21,d)}
+EMA50: ${ema50?'$'+nf(ema50,d):'--'} | EMA200: ${ema200?'$'+nf(ema200,d):'--'}
+Cena vs EMA9: ${vsE9!=null?(vsE9>=0?'+':'')+vsE9.toFixed(2)+'%':'--'}
+Cena vs EMA200: ${vsE200!=null?(vsE200>=0?'+':'')+vsE200.toFixed(2)+'%':'--'}
+
+--- MACD (1h) ---
+Line: ${macd?nf(macd.line,4):'--'} | Signal: ${macd?nf(macd.signal,4):'--'}
+Histogram: ${macd?nf(macd.hist,4):'--'} → ${macd?macd.hist>0?'BULLISH':'BEARISH':'--'}
+
+--- ATR & SWING ---
+ATR 14 (1h): $${atr?nf(atr,d):'--'} (${atrPct?atrPct.toFixed(2)+'% ceny':'--'})
+Swing High 15m: $${nf(sw15.h,d)} | Swing Low 15m: $${nf(sw15.l,d)}
+Swing High 1h: $${nf(sw1h.h,d)} | Swing Low 1h: $${nf(sw1h.l,d)}
+
+--- FUNDING & POZYCJE ---
+Funding teraz: ${fundNow!=null?(fundNow*100).toFixed(4)+'%':'--'}
+Funding trend 7d: ${fundTrendStr}
+Long/Short ratio: ${lsStr}
+L/S sygnał: ${lsSig}
+
+--- KLUCZOWE POZIOMY CENOWE ---
+Daily Open:        $${dOpen?nf(dOpen,d):'--'}
+Daily High dziś:   $${dHigh?nf(dHigh,d):'--'}
+Daily Low dziś:    $${dLow?nf(dLow,d):'--'}
+Daily High wczoraj:$${pdHigh?nf(pdHigh,d):'--'}
+Daily Low wczoraj: $${pdLow?nf(pdLow,d):'--'}
+Weekly Open:       $${wOpen?nf(wOpen,d):'--'}
+Weekly High:       $${wHigh?nf(wHigh,d):'--'}
+Weekly Low:        $${wLow?nf(wLow,d):'--'}
+VWAP 24h:          $${vwap?nf(vwap,d):'--'} (cena ${vsVwap!=null?(vsVwap>=0?'powyżej +':'poniżej ')+Math.abs(vsVwap).toFixed(2)+'%':'--'})
+Round opór:        $${nf(rndResFixed,d)} (+${rndResDist?rndResDist.toFixed(2)+'%':'--'})
+Round wsparcie:    $${nf(rndSupFixed,d)} (-${rndSupDist?rndSupDist.toFixed(2)+'%':'--'})
+Najbliższy poziom: $${nf(closestLevel,d)} (${distToKey>=0?'+':''}${distToKey.toFixed(2)}% od ceny)
+
+--- SENTYMENT ---
+Fear & Greed: ${fgVal} (${fgClass})
+
+--- PODSUMOWANIE AI ---
+Bias: ${biasStr}
+Hint: ${hint}
+
+--- OSTATNIE ŚWIECE 15m (OHLCV) ---
+${k15.slice(-10).map(x=>{const d2=new Date(x.t);const ts=d2.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});return ts+' O:'+x.o.toFixed(dec(x.o))+' H:'+x.h.toFixed(dec(x.h))+' L:'+x.l.toFixed(dec(x.l))+' C:'+x.c.toFixed(dec(x.c))+' V:'+Math.round(x.v);}).join('\n')}
+
+--- OSTATNIE ŚWIECE 1h (OHLCV) ---
+${k1h.slice(-8).map(x=>{const d2=new Date(x.t);const ts=d2.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});return ts+' O:'+x.o.toFixed(dec(x.o))+' H:'+x.h.toFixed(dec(x.h))+' L:'+x.l.toFixed(dec(x.l))+' C:'+x.c.toFixed(dec(x.c))+' V:'+Math.round(x.v);}).join('\n')}
+
+=== ZADANIE ===
+Jesteś profesjonalnym traderem futures z 10-letnim doświadczeniem. Na podstawie WSZYSTKICH powyższych danych (wskaźniki, świece, funding, sentyment):
+1. Wybierz kierunek: LONG lub SHORT (lub BRAK SETUPU jeśli warunki niejasne)
+2. Entry: konkretna cena przy kluczowym poziomie (swing, EMA, round number) — nie "market"
+3. TP: cel przy strukturze wyżej/niżej
+4. SL: oparty o ATR lub ostatni swing — nie za ciasny
+5. Lewar: max x50, dopasowany do ATR% — im wyższy ATR%, tym niższy lewar
+6. R:R: minimum 1:2
+7. Krótkie uzasadnienie (2-3 zdania) dlaczego ten kierunek i te poziomy`;
+
+    $('prompt').value=prompt;
+
+  }catch(e){
+    $('errMsg').textContent='Błąd: '+e.message;$('updated').textContent='błąd';
+    $('prompt').value='Błąd: '+e.message;
+    console.error(e);
+  }
+}
+
+function setSym(sym){s.sym=sym;document.querySelectorAll('#presets .btn').forEach(b=>b.classList.toggle('active',b.dataset.sym===sym));$('symbol').textContent=sym;load();}
+$('presets').onclick=e=>{if(e.target.matches('button'))setSym(e.target.dataset.sym);};
+$('useSymbol').onclick=()=>{const v=$('custom').value.trim().toUpperCase().replace(/[\/_ ]/g,'')+'USDT'.replace('USDTUSDT','USDT');if(v&&v.length>4)setSym(v);else if(v)setSym(v);};
+$('refresh').onclick=load;
+$('copy').onclick=async()=>{
+  try{await navigator.clipboard.writeText($('prompt').value);}
+  catch{$('prompt').select();document.execCommand('copy');}
+  $('copy').textContent='✓ Skopiowano!';setTimeout(()=>$('copy').textContent='📋 Kopiuj prompt',1800);
+};
+$('openMexc').onclick=()=>window.open('https://www.mexc.com/pl-PL/futures/'+s.sym.replace('USDT','_USDT'),'_blank');
+setInterval(()=>$('clock').textContent=new Date().toLocaleTimeString('pl-PL'),1000);
+load();
+</script>
+</body>
+</html>
